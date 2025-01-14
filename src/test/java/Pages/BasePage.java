@@ -10,11 +10,19 @@ import java.time.Duration;
 
 public class BasePage {
 
-    WebDriver driver;
+    public static WebDriver driver;
+    public BasePage(WebDriver driver)
+    {
+        if (driver == null) {
+            System.out.printf("WebDriver instance cannot be null!");
+        }
+        this.driver = driver;
+
+    }
+
     By accountUserTextBy = By.className("dropdown-label");
     By searchBox = By.id("search-form__input-field__search-input");
 
-    public BasePage(WebDriver driver){this.driver = driver;}
 
     public String getAccountUserText()
     {
