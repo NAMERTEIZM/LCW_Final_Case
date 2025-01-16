@@ -21,6 +21,7 @@ public class ProductDetailPage extends BasePage {
     private By size = By.xpath("//*[@id=\"ShoppingCartContent\"]/div[1]/div[2]/div[2]/div[2]/div[3]/div[1]/div[1]/div[1]/div[2]/div[2]/span[1]/strong");
     private By colour = By.xpath("//*[@id=\"ShoppingCartContent\"]/div[1]/div[2]/div[2]/div[2]/div[3]/div[1]/div[1]/div[1]/div[2]/div[2]/span[2]/strong");
     private By price = By.xpath("//*[@id=\"ShoppingCartContent\"]/div[1]/div[2]/div[2]/div[2]/div[3]/div[1]/div[1]/div[2]/span");
+    private By expectedPrice =By.xpath("//*[@id=\"ShoppingCartContent\"]/div[1]/div[3]/div[2]/div[3]/div/span[2]");
     private By plusQuantity = By.id("Cart_AddQuantity_1766500558");
     private By minusQuantity = By.id("Cart_RemoveQuantity_1766500558");
     private By myFavs = By.xpath("//*[@id=\"header__container\"]/header/div[1]/div[3]/div/div[1]/a/span");
@@ -29,6 +30,31 @@ public class ProductDetailPage extends BasePage {
 
     public ProductDetailPage(WebDriver driver) {
         super(driver);
+    }
+
+    public String sizeText()
+    {
+        WebElement sizeElement = driver.findElement(size);
+        return sizeElement.getText();
+
+    }
+    public String colourText()
+    {
+        WebElement colourElement = driver.findElement(colour);
+        return colourElement.getText();
+
+    }
+    public String priceText()
+    {
+        WebElement priceElement = driver.findElement(price);
+        return priceElement.getText();
+
+    }
+    public String expectedPriceText()
+    {
+        WebElement expectedPriceElement = driver.findElement(expectedPrice);
+        return expectedPriceElement.getText();
+
     }
 
     public void selectAvailableSizeAndAddToCart() {
