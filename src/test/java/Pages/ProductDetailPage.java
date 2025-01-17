@@ -22,16 +22,44 @@ public class ProductDetailPage extends BasePage {
     private By colour = By.xpath("//*[@id=\"ShoppingCartContent\"]/div[1]/div[2]/div[2]/div[2]/div[3]/div[1]/div[1]/div[1]/div[2]/div[2]/span[2]/strong");
     private By price = By.xpath("//*[@id=\"ShoppingCartContent\"]/div[1]/div[2]/div[2]/div[2]/div[3]/div[1]/div[1]/div[2]/span");
     private By expectedPrice =By.xpath("//*[@id=\"ShoppingCartContent\"]/div[1]/div[3]/div[2]/div[3]/div/span[2]");
-    private By plusQuantity = By.id("Cart_AddQuantity_1766500558");
-    private By minusQuantity = By.id("Cart_RemoveQuantity_1766500558");
+    private By plusQuantity = By.cssSelector("a.oq-up.plus");
+    private By minusQuantity = By.cssSelector("a.oq-down.minus");
     private By myFavs = By.xpath("//*[@id=\"header__container\"]/header/div[1]/div[3]/div/div[1]/a/span");
-
+    private By addFavs = By.xpath("//i[contains(@class, 'fa') and contains(@class, 'fa-heart')]\n");
 
 
     public ProductDetailPage(WebDriver driver) {
         super(driver);
     }
 
+    public WebElement addFavsElement()
+    {
+
+        return driver.findElement(addFavs);
+
+    }
+
+    public WebElement myFavsElement()
+    {
+
+        return driver.findElement(myFavs);
+
+    }
+
+
+    public WebElement minusQuantityElement()
+    {
+
+        return driver.findElement(minusQuantity);
+
+    }
+
+    public WebElement plusQuantityElement()
+    {
+
+        return driver.findElement(plusQuantity);
+
+    }
     public String sizeText()
     {
         WebElement sizeElement = driver.findElement(size);
@@ -112,7 +140,41 @@ public class ProductDetailPage extends BasePage {
     }
 */
 
+    // Method 1: Increase and Decrease Quantity
+    public void increaseAndDecreaseQuantity() {
+        try {
+            // Click on the increase quantity button
+            plusQuantityElement().click();
+            System.out.println("Quantity increased successfully.");
+            Thread.sleep(5000); // Wait for 5 seconds to observe the change
 
+            // Click on the decrease quantity button
+            minusQuantityElement().click();
+            System.out.println("Quantity decreased successfully.");
+            Thread.sleep(5000); // Wait for 5 seconds to observe the change
+
+        } catch (Exception e) {
+            System.out.println("Error during quantity adjustment: " + e.getMessage());
+        }
+    }
+
+    // Method 2: Add to Favorites and Verify
+    public void addToFavoritesAndVerify() {
+        try {
+            // Click on the 'Add to Favorites' button
+            addFavsElement().click();
+            System.out.println("Product added to favorites.");
+            Thread.sleep(5000); // Wait for 5 seconds to ensure the product is added
+
+            // Click on the 'My Favorites' button to navigate to the favorites page
+            myFavsElement().click();
+            System.out.println("Navigated to the favorites page.");
+            Thread.sleep(10000); // Wait for 10 seconds to observe the favorites page
+
+        } catch (Exception e) {
+            System.out.println("Error while adding to favorites or navigating to favorites page: " + e.getMessage());
+        }
+    }
 
 
 

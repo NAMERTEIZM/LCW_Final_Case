@@ -36,6 +36,9 @@ public class ProductDetailPageTest extends BaseTest{
             e.printStackTrace();
         }
 
+        productDetailPage.increaseAndDecreaseQuantity();
+        productDetailPage.addToFavoritesAndVerify();
+
     }
 
 
