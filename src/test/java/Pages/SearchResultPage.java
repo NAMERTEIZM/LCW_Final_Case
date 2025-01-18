@@ -6,6 +6,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.List;
 
 public class SearchResultPage extends BasePage {
 
@@ -14,11 +15,14 @@ public class SearchResultPage extends BasePage {
     private final By CategoryHoverButtonLocator = By.xpath("//*[@id=\"header__container\"]/header/div[3]/nav/ul/li[4]/div/nav/ul/button[4]/span[1]");
     private final By ProductCategoryButton = By.cssSelector("a.zone-item__anchor[href=\"/kiz-cocuk-dis-giyim-t-1010\"]\n");
     private final By scrollableDivLocator = By.xpath("//*[@id=\"root\"]/div/div[2]/div[1]/div[6]/div/div[1]");
-    private final By checkbox1Locator = By.cssSelector("span.filter-option__text:contains(\"5-6 Yaş\")\n");
-    private final By checkbox2Locator = By.xpath("//span[contains(@class, 'filter-option__text') and contains(text(), '6 Yaş')]");
+    private final By checkbox1Locator = By.xpath("//*[@id=\"root\"]/div/div[2]/div[1]/div[6]/div/div[1]/div/div[4]/div/div[2]/div[3]/div[2]/div/span");
+    private final By checkbox2Locator = By.xpath("//div[contains(@class, 'filter-option') and .//span[text()='6 Yaş']]//span[@class='lcw-checkbox__checkbox']");
     private final By checkbox3Locator = By.xpath("//span[contains(@class, 'filter-option__text') and contains(text(), '6-7 Yaş')]");
     private final By colourLocator = By.xpath("//div[contains(@class, 'color-filter-option')]//span[contains(@class, 'color-filter-option__text') and text()='BEJ']");
     private final By cookieAcceptButton = By.id("cookieseal-banner-accept");
+    private final By dropdownButton = By.xpath("//*[@id=\"root\"]/div/div[2]/div[1]/div[5]/div[1]/div/div");
+    private final By bestSeller = By.xpath("//*[@id=\"root\"]/div/div[2]/div[1]/div[5]/div[1]/div/div/div/a[5]");
+    private final By productList = By.xpath("//*[@id=\"root\"]/div/div[2]/div[1]/div[8]/div/div/div");
 
     public SearchResultPage(WebDriver driver) {
         super(driver);
@@ -51,14 +55,25 @@ public class SearchResultPage extends BasePage {
             waitForPageToLoad();
 
             // Filtreleme işlemleri
-
             applyFilter(scrollableDivLocator, checkbox1Locator, wait); // 5-6 Yaş
             applyFilter(scrollableDivLocator, checkbox2Locator, wait); // 6 Yaş
             applyFilter(scrollableDivLocator, checkbox3Locator, wait); // 6-7 Yaş
             applyFilter(scrollableDivLocator, colourLocator, wait);   // BEJ
+            driver.navigate().to("https://www.lcw.com/kiz-cocuk-dis-giyim-t-1010?beden=5-6-yas,6-yas,6-7-yas&renk=bej");
+
+            // Dropdown ve Best Seller'a tıklama
+            WebElement dropdown = wait.until(ExpectedConditions.elementToBeClickable(dropdownButton));
+            dropdown.click();
+            Thread.sleep(2000);
+
+            WebElement bestSellerOption = wait.until(ExpectedConditions.elementToBeClickable(bestSeller));
+            bestSellerOption.click();
+            waitForPageToLoad();
+
+            // Ürün listesinden 4. ürünü seç ve tıkla
+            selectFourthProduct(driver,wait);
 
             System.out.println("Başarıyla tüm işlemler tamamlandı.");
-            Thread.sleep(20000); // Sayfanın kullanıcı tarafından incelenmesi için 20 saniye bekle
         } catch (Exception e) {
             System.out.println("Hata oluştu: " + e.getMessage());
             e.printStackTrace();
@@ -67,33 +82,91 @@ public class SearchResultPage extends BasePage {
 
     private void applyFilter(By divLocator, By checkboxLocator, WebDriverWait wait) {
         try {
-            WebElement scrollableDiv = wait.until(ExpectedConditions.presenceOfElementLocated(divLocator));
+            scrollToElementInsideDiv(divLocator, checkboxLocator, wait);
+
             WebElement checkbox = wait.until(ExpectedConditions.presenceOfElementLocated(checkboxLocator));
-
-            // Checkbox görünmüyorsa div içinde kaydır
-            while (!checkbox.isDisplayed()) {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollTop = arguments[0].scrollTop + arguments[1];", scrollableDiv, 200);
-                Thread.sleep(500);
-            }
-
-            // Checkbox görünürse ve seçili değilse tıkla
             if (!checkbox.isSelected()) {
                 checkbox.click(); // Checkbox'a tıkla
-                System.out.println("Başarıyla tıklandı: " + checkboxLocator.toString());
-
-                // Tıklamadan sonra sayfanın tamamen yüklenmesini bekle
+                System.out.println("Checkbox başarıyla tıklandı: " + checkboxLocator.toString());
                 waitForPageToLoad();
-                Thread.sleep(1000); // Ekstra bekleme süresi
             } else {
                 System.out.println("Checkbox zaten seçili: " + checkboxLocator.toString());
             }
-        } catch (StaleElementReferenceException e) {
-            System.out.println("Element değişmiş: " + checkboxLocator.toString() + " - Yeniden denenecek.");
-            applyFilter(divLocator, checkboxLocator, wait); // Element yeniden kontrol edilir
         } catch (Exception e) {
             System.out.println("Filtreleme sırasında hata: " + checkboxLocator.toString() + " - " + e.getMessage());
         }
     }
+
+    private void scrollToElementInsideDiv(By divLocator, By elementLocator, WebDriverWait wait) {
+        WebElement scrollableDiv = wait.until(ExpectedConditions.presenceOfElementLocated(divLocator));
+        WebElement targetElement;
+
+        int maxScrollAttempts = 10; // Maksimum scroll deneme sayısı
+        int currentAttempt = 0;
+        boolean isElementVisible = false;
+
+        while (currentAttempt < maxScrollAttempts) {
+            try {
+                targetElement = wait.until(ExpectedConditions.presenceOfElementLocated(elementLocator));
+
+                // Eğer element görünürse işlemi sonlandır
+                if (targetElement.isDisplayed()) {
+                    isElementVisible = true;
+                    break;
+                }
+
+                // Element görünmüyorsa scroll yap
+                ((JavascriptExecutor) driver).executeScript(
+                        "arguments[0].scrollTop = arguments[0].scrollTop + arguments[1];",
+                        scrollableDiv, 100); // 100 piksel aşağı kaydır
+                Thread.sleep(500);
+
+            } catch (Exception e) {
+                System.out.println("Scroll sırasında hata: " + e.getMessage());
+            }
+
+            currentAttempt++;
+        }
+
+        if (!isElementVisible) {
+            throw new NoSuchElementException("Element görünür hale getirilemedi: " + elementLocator.toString());
+        }
+    }
+
+    private void selectFourthProduct(WebDriver driver, WebDriverWait wait) {
+        try {
+            // Ürünlerin yer aldığı locator
+            By productListLocator = By.cssSelector(".product-card.product-card--one-of-4");
+
+            // Ürünlerin yüklenmesini bekle
+            wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(productListLocator));
+
+            // Ürün listesini al
+            List<WebElement> products = driver.findElements(productListLocator);
+
+            // 4. ürünün mevcut olup olmadığını kontrol et
+            if (products.size() < 4) {
+                throw new NoSuchElementException("Ürün listesinde 4. ürün bulunamadı. Mevcut ürün sayısı: " + products.size());
+            }
+
+            // 4. ürünü al
+            WebElement fourthProduct = products.get(2); // List indeksleri 0'dan başlar
+
+            // Ürünü görüntü alanına kaydır ve tıkla
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", fourthProduct);
+            wait.until(ExpectedConditions.elementToBeClickable(fourthProduct)).click();
+            Thread.sleep(10000);
+
+            System.out.println("4. ürüne başarıyla tıklandı.");
+        } catch (Exception e) {
+            System.out.println("4. ürüne tıklama sırasında hata: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
+
+
 
 
     private void waitForPageToLoad() {
